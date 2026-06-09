@@ -1,0 +1,3 @@
+import os
+
+SQL_ALCHEMY_DATABASE_URL = os.getenv("SQL_ALCHEMY_DATABASE_URL")

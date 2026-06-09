@@ -1,0 +1,19 @@
+[project]
+name = "chatbot"
+version = "0.1"
+description = ""
+authors = [
+    {name = "carlos-dani-dev",email = "carlos.rocha@ufpi.edu.br"}
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi (>=0.136.3,<0.137.0)",
+    "numpy (>=2.4.6,<3.0.0)",
+    "pandas (>=3.0.3,<4.0.0)",
+    "selenium (>=4.44.0,<5.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
