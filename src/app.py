@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from .database import engine, Base
 
 
 app = FastAPI(
@@ -8,4 +9,11 @@ app = FastAPI(
 )
 
 
-app.include
+@app.get('/healthy')
+def health_check():
+    return {'status': 'Healthy'}
+
+
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)

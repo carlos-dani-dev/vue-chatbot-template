@@ -7,10 +7,13 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi (>=0.136.3,<0.137.0)",
     "numpy (>=2.4.6,<3.0.0)",
     "pandas (>=3.0.3,<4.0.0)",
-    "selenium (>=4.44.0,<5.0.0)"
+    "selenium (>=4.44.0,<5.0.0)",
+    "sqlalchemy (>=2.0.50,<3.0.0)",
+    "fastapi[standard] (>=0.136.3,<0.137.0)",
+    "python-dotenv (>=1.2.2,<2.0.0)",
+    "psycopg2 (>=2.9.12,<3.0.0)"
 ]
 
 
