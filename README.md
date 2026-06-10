@@ -79,6 +79,39 @@ pytest
 # task test
 ```
 
+## Rodando com Taskipy
+
+O projeto já inclui o `taskipy` em [pyproject.toml](pyproject.toml) com tarefas úteis (por exemplo: `run`, `clean`, `test`). Você pode usar o `taskipy` para executar comandos comuns de forma padronizada.
+
+- Para instalar dependências via Poetry (recomendado):
+
+```bash
+poetry install
+```
+
+- Listar tarefas disponíveis:
+
+```bash
+task --list
+# ou
+task -l
+```
+
+- Executar as tarefas definidas:
+
+```bash
+# roda o ambiente via Docker Compose
+poetry run task run
+
+# executa a suíte de testes
+poetry run task test
+
+# para parar/remover volumes
+poetry run task clean
+```
+
+Se preferir, instale o `task` globalmente (`pip install taskipy`) e rode `task run`/`task test`/`task clean` diretamente.
+
 ## Observações
 
 - O `Dockerfile` usa `uvicorn src.app:app` como comando de inicialização.
