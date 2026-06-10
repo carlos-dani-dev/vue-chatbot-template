@@ -1,45 +1,48 @@
 import uuid
+from typing import List, Dict
+from datetime import datetime
 from sqlalchemy import Column, Uuid, Integer, DateTime, String, JSON, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-Base = declarative_base()
-
+class Base(DeclarativeBase):
+    pass
 
 class User(Base):
     __tablename__ = "users"
 
-    id=Column(Uuid, primary_key=True, default=uuid.uuid4)
-    email=Column(String)
-    username=Column(String)
-    hashed_password=Column(String, nullable=False)
-    role=Column(String, nullable=False)
+    id: Mapped[uuid.UUID]=mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    email: Mapped[str]=mapped_column(String)
+    username: Mapped[str]=mapped_column(String)
+    hashed_password: Mapped[str]=mapped_column(String, nullable=False)
+    role: Mapped[str]=mapped_column(String, nullable=False)
 
-    chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
+    chat_sessions: Mapped[List["ChatSession"]] = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
 
 
 class ChatSession(Base):
     __tablename__ = "chat_sessions"
 
-    id=Column(Uuid, primary_key=True, default=uuid.uuid4)
-    user_id=Column(Uuid, ForeignKey("users.id"), nullable=False)
-    title=Column(String)
-    created_at=Column(DateTime)
-    session_metadata=Column(JSON)
+    id: Mapped[uuid.UUID]=mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID]=mapped_column(Uuid, ForeignKey("users.id"), nullable=False)
+    title: Mapped[str]=mapped_column(String)
+    created_at: Mapped[datetime]=mapped_column(DateTime)
+    session_metadata: Mapped[Dict[str, any]]=mapped_column(JSON)
 
-    user=relationship("User", back_populates="chat_sessions")
-    messages=relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
+    user: Mapped["User"]=relationship("User", back_populates="chat_sessions")
+    messages: Mapped[List["ChatMessage"]]=relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
+
 
 class ChatMessage(Base):
     __tablename__="chat_messages"
 
-    id=Column(Uuid, primary_key=True, default=uuid.uuid4)
-    session_id=Column(Uuid, ForeignKey("chat_sessions.id"), nullable=False)
-    sender=Column(String, nullable=False)
-    message=Column(String, nullable=False)
-    timestamp=Column(DateTime, nullable=False)
-    tokens_input=Column(Integer, nullable=False)
-    tokens_output=Column(Integer, nullable=False)
-    message_metadata=Column(JSON)
+    id: Mapped[uuid.UUID]=mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID]=mapped_column(Uuid, ForeignKey("chat_sessions.id"), nullable=False)
+    sender: Mapped[str]=mapped_column(String, nullable=False)
+    message: Mapped[str]=mapped_column(String, nullable=False)
+    timestamp: Mapped[datetime]=mapped_column(DateTime, nullable=False)
+    tokens_input: Mapped[int]=mapped_column(Integer, nullable=False)
+    tokens_output: Mapped[int]=mapped_column(Integer, nullable=False)
+    message_metadata: Mapped[Dict[str, any]]=mapped_column(JSON)
 
-    session=relationship("ChatSession", back_populates="messages")
+    session: Mapped[List["ChatSession"]]=relationship("ChatSession", back_populates="messages")
