@@ -3,3 +3,4 @@ package-lock.json
 /node_modules
 poetry.lock
 /src/__pycache__/
+/src/routes/__pycache__/chat_session.cpython-313.pyc

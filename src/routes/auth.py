@@ -12,7 +12,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 
-from ..schema import CreateUserRequest, GetToken
+from ..schemas.auth import CreateUserRequest, TokenResponse
 from ..models import User
 
 router = APIRouter(
@@ -38,8 +38,6 @@ def get_db():
     finally: db.close()
 
 
-db_dependency = Annotated[Session, Depends(get_db)]
-bearer_dependency = Annotated[str, Depends(oauth2_bearer)]
 ### endpoints
 
 async def authenticate_user(username:str, password:str, db):
@@ -51,41 +49,55 @@ async def authenticate_user(username:str, password:str, db):
 async def create_access_token(user_id:str, username:str, role:str, expires_delta:timedelta):
     expires = datetime.now(timezone.utc) + expires_delta
     encoded_access_token = jwt.encode(
-        {"username":username, "user_id":user_id, "role":role, "exp":expires},
+        {"username":username, "user_id":str(user_id), "role":role, "exp":expires},
         SECRET_KEY, ALGORITHM
     )
     return encoded_access_token
 
-async def get_current_user(token: bearer_dependency):
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_bearer)],
+    db: Annotated[Session, Depends(get_db)],
+):
     try:
-        payload=jwt.decode(token, SECRET_KEY, ALGORITHM)
+        payload=jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         username = payload.get("username")
         role = payload.get("role")
 
         if username is None or user_id is None:
-            raise HTTPException(status_code=status.HTTP_401_UNHAUTORIZED, detail="Impossível validar usuário.")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTORIZED, detail="Impossível validar usuário.")
+        user_model = db.query(User).filter(User.id == user_id).first()
+        if user_model is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTORIZED,
+                                detail="Usuério não encontrado.")
+    
         return {"user_id": user_id, "username": username, "role": role}
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNHAUTORIZED, detail="Impossível validar usuário.")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTORIZED, detail="Impossível validar usuário.")
 
 
 @router.get("/")
-async def get_user():
-    return {"user": "authenticated"}
+async def get_user(current_user: Annotated[dict, Depends(get_current_user)]):
+    return {"user": current_user}
 
 
-@router.post("/token", response_model=GetToken, status_code=status.HTTP_201_CREATED)
-async def login_for_access_token(form: Annotated[OAuth2PasswordRequestForm, Depends()], db:db_dependency):
+@router.post("/token", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+async def login_for_access_token(
+    form: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Annotated[Session, Depends(get_db)],
+):
     user = await authenticate_user(form.username, form.password, db)
-    if not user: raise HTTPException(status_code=status.HTTP_401_UNHAUTORIZED, detail="Impossível validar usuário.")
+    if not user: raise HTTPException(status_code=status.HTTP_401_UNAUTORIZED, detail="Impossível validar usuário.")
 
-    token = await create_access_token(user.user_id, user.username, user.role, timedelta(minutes=20))
+    token = await create_access_token(user.id, user.username, user.role, timedelta(minutes=20))
 
     return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
+async def create_user(
+    db: Annotated[Session, Depends(get_db)],
+    create_user_request: CreateUserRequest,
+):
     user_model = User(
         username=create_user_request.username,
         email=create_user_request.email,

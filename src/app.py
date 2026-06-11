@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .database import engine
 from .models import Base
-from .routes import auth
+from .routes import auth, chat_session
 
 app = FastAPI(
     tittle="The unnoficial world cup chatbot",
@@ -10,6 +10,7 @@ app = FastAPI(
 )
 
 app.include_router(auth.router)
+app.include_router(chat_session.router)
 
 @app.get('/healthy')
 def health_check():

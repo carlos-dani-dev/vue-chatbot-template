@@ -1,31 +1,25 @@
+from typing import Any
 from uuid import UUID
 from datetime import datetime
-from typing import Optional, List
 from pydantic import BaseModel, EmailStr, Json
 
 
-class CreateUserRequest(BaseModel):
-    id: UUID
-    email: EmailStr
-    username: str
-    password: str
-    role: str
-
-
-class GetToken(BaseModel):
-    access_token: str
-    token_type: str
-
-class ChatSession(BaseModel):
+class ChatSessionResponse(BaseModel):
     id: UUID
     user_id: UUID
-    tittle: str
-    created_at: datetime
-    metadata: Json
+    title: str
+    session_metadata: dict[str, Any]
 
     class Config:
         from_attributes=True
 
+
+class CreateChatSessionRequest(BaseModel):
+    title: str
+    session_metadata: dict[str, Any]
+
+class ChatSessionListResponse(BaseModel):
+    items: list[ChatSessionResponse]
 
 class ChatMessage(BaseModel):
     id: UUID
@@ -35,7 +29,7 @@ class ChatMessage(BaseModel):
     timestamp: datetime
     tokens_input: int
     tokens_output: int
-    metadata: Json
+    message_metadata: dict[str, Any]
     
     class Config:
         from_attributes=True
