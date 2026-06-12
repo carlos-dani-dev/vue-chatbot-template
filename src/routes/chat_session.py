@@ -1,18 +1,18 @@
 from starlette import status
-from typing import Annotated
-from pydantic import BaseModel, EmailStr
-from datetime import timedelta, datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Request
-
-from jose import JWTError, jwt
-from ..config import SECRET_KEY, ALGORITHM
+from typing import Annotated, Dict
+from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 
-from ..schemas.auth import TokenResponse, CreateUserRequest
-from ..schemas.chat_session import ChatSessionResponse, CreateChatSessionRequest, ChatSessionListResponse
-from ..models import User, ChatSession
+from ..schemas.auth import TokenResponse
+from ..schemas.chat_session_schema import ChatSessionResponse, CreateChatSessionRequest, ChatSessionListResponse
+from ..models import ChatSession, User
+from ..services.chat_session_service import ChatSessionService
+from ..services.user_service import UserService
+
+from ..clients.inference_gw import InferenceGateway
+from ..clients.inference_client import InferenceHttpClient
 
 from .auth import get_current_user
 
@@ -23,23 +23,30 @@ router = APIRouter(
 
 
 def get_db():
-    """
-    Abre uma nova conexão com o banco de dados e a retorna (yield)
-    Após o fim do escopo em que a função get_db é chamada, a conexão é fechada
-    """
-
     db = SessionLocal()
     try: yield db
     finally: db.close()
 
+def get_inference_gateway() -> InferenceGateway:
+    return InferenceGateway(InferenceHttpClient())
+
+def get_chat_service(
+    db: Session = Depends(get_db),
+    gateway: InferenceGateway = Depends(get_inference_gateway),
+) -> ChatSessionService:
+    return ChatSessionService(db, gateway)
+
+def get_user_service(db: Session = Depends(get_db)) -> UserService:
+    return UserService(db)
+
 
 @router.get("", response_model=ChatSessionListResponse, status_code=status.HTTP_200_OK)
 async def list_user_chat_sessions(
-    user: Annotated[TokenResponse, Depends(get_current_user)],
-    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[Dict, Depends(get_current_user)],
+    chat_service_dependency: Annotated[Session, Depends(get_chat_service)]
 ):
     
-    chat_sessions = db.query(ChatSession).filter(ChatSession.user_id == user["user_id"]).all()
+    chat_sessions = chat_service_dependency.list_chat_sessions_by_user(user["user_id"])
     if chat_sessions is None or chat_sessions is []:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário sem chats criados.")
 
@@ -59,12 +66,12 @@ async def list_user_chat_sessions(
 
 @router.get("/{chat_session_id}", response_model=ChatSessionResponse, status_code=status.HTTP_200_OK)
 async def get_user_chat_session(
+    user: Annotated[Dict, Depends(get_current_user)],
     chat_session_id: str,
-    user: Annotated[TokenResponse, Depends(get_current_user)],
-    db: Annotated[Session, Depends(get_db)],
+    chat_service_dependency: Annotated[Session, Depends(get_chat_service)]
 ):
 
-    chat_session = db.query(ChatSession).filter(ChatSession.id == chat_session_id).first()
+    chat_session = chat_service_dependency.get_chat_session(chat_session_id, user["user_id"])
     if chat_session is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat não encontrado.")
     
@@ -81,23 +88,31 @@ async def get_user_chat_session(
 
 @router.post("/", response_model=ChatSessionResponse, status_code=status.HTTP_201_CREATED)
 async def create_chat_session(
+    user: Annotated[Dict, Depends(get_current_user)],
     payload: CreateChatSessionRequest,
-    user: Annotated[TokenResponse, Depends(get_current_user)],
-    db: Annotated[Session, Depends(get_db)],
+    chat_service_dependency: Annotated[Session, Depends(get_chat_service)]
 ):
-    
-    chat_session_model = ChatSession(user_id=user["user_id"], title=payload.title, session_metadata=payload.session_metadata)
-    db.add(chat_session_model)
-    db.commit()
+    chat_session_model = chat_service_dependency.create_chat_session(
+        payload.chat_id,
+        user["user_id"],
+        "Título do Chat_Session",
+        payload.channel
+    )
 
-    chat_session_response = ChatSessionResponse(user_id=user["user_id"], title=chat_session_model.title, session_metadata=chat_session_model.session_metadata)
-    return chat_session_response
+    chat_service_dependency.db.add(chat_session_model)
+    chat_service_dependency.db.commit()
+
+    return ChatSessionResponse(id=chat_session_model.id,
+                               user_id=chat_session_model.user_id,
+                               title=chat_session_model.title,
+                               channel=chat_session_model.channel,
+                               session_metadata=chat_session_model.session_metadata)
 
 
 @router.delete("/{chat_session_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_chat_session(
     chat_session_id: str,
-    user: Annotated[TokenResponse, Depends(get_current_user)],
+    user: Annotated[Dict, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
 

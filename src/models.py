@@ -27,6 +27,7 @@ class ChatSession(Base):
     id: Mapped[uuid.UUID]=mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID]=mapped_column(Uuid, ForeignKey("users.id"), nullable=False)
     title: Mapped[str]=mapped_column(String)
+    channel: Mapped[str]=mapped_column(String)
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.now(UTC))
     session_metadata: Mapped[dict[str, any]]=mapped_column(JSON)
 
@@ -39,8 +40,8 @@ class ChatMessage(Base):
 
     id: Mapped[uuid.UUID]=mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     session_id: Mapped[uuid.UUID]=mapped_column(Uuid, ForeignKey("chat_sessions.id"), nullable=False)
-    sender: Mapped[str]=mapped_column(String, nullable=False)
-    message: Mapped[str]=mapped_column(String, nullable=False)
+    role: Mapped[str]=mapped_column(String, nullable=False)
+    content: Mapped[str]=mapped_column(String, nullable=False)
     timestamp: Mapped[datetime]=mapped_column(DateTime, nullable=False)
     tokens_input: Mapped[int]=mapped_column(Integer, nullable=False)
     tokens_output: Mapped[int]=mapped_column(Integer, nullable=False)
