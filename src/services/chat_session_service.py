@@ -4,11 +4,14 @@ import time
 from dataclasses import dataclass, field
 from typing import TypedDict, Literal, Protocol, Any
 
-from ..config import CHAT_DEFAULT_SYSTEM_PROMPT
+from ..config import CHAT_DEFAULT_SYSTEM_PROMPT, CONTEXT_STRATEGY, WINDOW_SIZE
+
+from ..exceptions.exceptions import ChatSessionNotFoundError
 
 from ..models import ChatSession, User
-from ..schemas.openaiLike_schema import ChatCompletionRequest, ChatCompletionMetadata, ChatMessage
+from ..schemas.openaiLike_schema import ChatCompletionRequest, ChatCompletionMetadata, ChatMessageOpenAI
 from ..repository.chat_session_repository import ChatSessionRepository
+
 
 
 @dataclass
@@ -40,26 +43,62 @@ class ContextStrategy(Protocol):
     ) -> ContextResult: ...
 
 
+def build_context(messages: list[ContextMessage]) -> list[ContextMessage]:
+    return messages[-int(WINDOW_SIZE):]
+
+
+class SlidingWindowStrategy:
+    def build(
+        self,
+        messages: list[ContextMessage],
+        *,
+        system_prompt: str = "",
+        conversation_summary: str | None = None,
+    ) -> ContextResult:
+        selected = build_context(messages)
+        return ContextResult(messages=selected, window_size=len(selected))
+
+
+STRATEGIES:dict[str, type[ContextStrategy]] = {
+    "sliding_window": SlidingWindowStrategy
+}
+
+def get_active_context_strategy_name() -> str:
+    return CONTEXT_STRATEGY.strip().lower()
+
+def get_context_strategy(name: str | None = None) -> ContextStrategy:
+    key = (name or get_active_context_strategy_name()).strip().lower()
+    cls = STRATEGIES.get(key)
+    if cls is None:
+        valid = ", ".join(sorted(STRATEGIES))
+        msg = f"CONTEXT_STRATEGY inválida: {key!r}. Valores: {valid}"
+        raise ValueError(msg)
+    return cls()
+
+
 class ChatSessionService:
 
-    def __init__(self, db, inference_gw, ctxt_strategy = None):
+    def __init__(self, db, inference_gw, ctxt_strategy: ContextStrategy | None = None):
         self.db = db
         self.inference_gw = inference_gw
         self.repo = ChatSessionRepository(db)
-        self.ctxt_strategy = ctxt_strategy
-        #self.ctxt_strategy_name = 
+        self.ctxt_strategy = ctxt_strategy or get_context_strategy()# None até me aventurar pelo folder 'context'
+        self.ctxt_strategy_name = get_active_context_strategy_name()# até me aventurar pelo folder 'context'
     
 
-    def resolve_session(self, user_id, session_id, channel) -> ChatSession:
+    def resolve_session(self, user_id, session_id, channel: str) -> ChatSession:
         if session_id:
-            existing = self.repo.get_session_by_user_id(session_id, user_id)
-            return existing
-            #raise ChatNotFoundError(session_id)
-        
-        public_id = str(uuid.uuid4)
-        return self.repo.create_session(
-            session_id=public_id,
-            user_id=user_id
+            chat_session = self.repo.get_chat_session_by_id(session_id, user_id)
+            if chat_session is None:
+                raise ChatSessionNotFoundError(session_id)
+            return chat_session
+
+        public_id = str(uuid.uuid4())
+        return self.create_chat_session(
+            public_id,
+            user_id,
+            "Título do Chat_Session",
+            channel,
         )
 
     @staticmethod
@@ -70,29 +109,29 @@ class ChatSessionService:
         return CHAT_DEFAULT_SYSTEM_PROMPT
 
 
-    def build_context(self, chat_session: ChatSession, system_prompt: str) -> tuple[list[ChatMessage], int, bool]:
-        rows = self.repo.list_messages_by_session_id(chat_session.id)
+    def build_context(self, chat_session: ChatSession, system_prompt: str) -> tuple[list[ChatMessageOpenAI], int, bool]:
+        rows = self.repo.list_messages_by_chat_session(chat_session.id)
 
         history: list[ContextMessage] = [{"role": message.role, "content": message.content} for message in rows]
 
         result = self.ctxt_strategy.build(
             history,
             system_prompt=system_prompt,
-            conversation_summary=chat_session.conversation_summary,
+            conversation_summary=chat_session.chat_session_summary,
         )
 
         if result.updated_summary is not None:
-            self.repo.update_conversation_summary(chat_session.id, result.updated_summary)
+            self.repo.update_chat_session_summary(chat_session.id, result.updated_summary)
             chat_session.conversation_summary = result.updated_summary
         
         chat_messages = [
-            ChatMessage(role=message["role"], content=message["content"]) for message in result.messages
+            ChatMessageOpenAI(role=message["role"], content=message["content"]) for message in result.messages
         ]
 
         return chat_messages, result.window_size, result.includes_system
     
     @staticmethod
-    def extract_latest_user(messages: list[ChatMessage]) -> ChatMessage | None:
+    def extract_latest_user(messages: list[ChatMessageOpenAI]) -> ChatMessageOpenAI | None:
         for message in reversed(messages):
             if message.role == "user" and message.content:
                 return message
@@ -100,17 +139,17 @@ class ChatSessionService:
 
 
     def build_prompt(self, request:ChatCompletionRequest,
-                     context_messages: list[ChatMessage], includes_system: bool) -> list[ChatMessage]:
+                     context_messages: list[ChatMessageOpenAI], includes_system: bool) -> list[ChatMessageOpenAI]:
         
         system_from_request = [message for message in request.messages if message.role == "system"]
         latest_user = self.extract_latest_user(request.messages)
 
-        merged: list[ChatMessage] = []
+        merged: list[ChatMessageOpenAI] = []
         if not includes_system:
             if system_from_request:
                 merged.extend(system_from_request)
             elif CHAT_DEFAULT_SYSTEM_PROMPT.strip():
-                merged.append(ChatMessage(role="system", content=CHAT_DEFAULT_SYSTEM_PROMPT))
+                merged.append(ChatMessageOpenAI(role="system", content=CHAT_DEFAULT_SYSTEM_PROMPT))
         
         merged.extend(context_messages)
 
@@ -124,7 +163,7 @@ class ChatSessionService:
         return merged
 
     @staticmethod
-    def extract_latest_user(messages: list[ChatMessage]) -> ChatMessage | None:
+    def extract_latest_user_content(messages: list[ChatMessageOpenAI]) -> ChatMessageOpenAI | None:
         for message in reversed(messages):
             if message.role == "user" and message.content:
                 return message.content
@@ -149,9 +188,9 @@ class ChatSessionService:
         started = time.perf_counter()
 
         chat_session = self.resolve_session(
-            user_id=user.id,
+            user_id=user["user_id"],
             session_id=request.session_id,
-            channel=request.channel    
+            channel=request.channel
         )
 
         system_prompt =  self.resolve_system_prompt(request)
@@ -167,7 +206,7 @@ class ChatSessionService:
             includes_system=includes_system
         )
 
-        latest_user = self.latest_user_content(request.messages)
+        latest_user = self.extract_latest_user_content(request.messages)
         
         inference_request = request.model_copy(update={"messages": built_messages})
         llm_response = self.inference_gw.chat_completion(inference_request)
@@ -175,14 +214,14 @@ class ChatSessionService:
         assistant_content = self.extract_assistant_content(llm_response)
 
         if latest_user:
-            self.repo.add_message(
-                session_id=chat_session.id,
+            self.repo.create_chat_message(
+                chat_id=chat_session.id,
                 role="user",
                 content=latest_user
             )
         if assistant_content:
-            self.repo.add_message(
-                session_id=chat_session.id,
+            self.repo.create_chat_message(
+                chat_id=chat_session.id,
                 role="assistant",
                 content=assistant_content
             )
@@ -190,10 +229,10 @@ class ChatSessionService:
 
         latency_ms = int((time.perf_counter() - started) * 1000)
         metadata = ChatCompletionMetadata(
-            session_id=chat_session.id,
+            session_id=str(chat_session.id),
             channel=chat_session.channel,
             latency_ms=latency_ms,
-            context_windows_size=context_size,
+            context_window_size=context_size,
             context_strategy=self.ctxt_strategy_name,
             persisted=True
         )
@@ -210,9 +249,22 @@ class ChatSessionService:
     def get_chat_session(self, chat_session_id, user_id) -> ChatSession:
         return self.repo.get_chat_session_by_id(chat_session_id, user_id)
     
-    def create_chat_session(self, chat_id: str | None, user_id, title: str, channel: str):
-        if chat_id:
-            chat_session = self.repo.get_chat_session_by_id(chat_id, user_id)
+    def create_chat_session(self, chat_session_id: str | None, user_id, title: str, channel: str):
+        if chat_session_id:
+            chat_session = self.repo.get_chat_session_by_id(chat_session_id, user_id)
             if chat_session is not None:
                 return chat_session
-        return self.repo.create_chat_session(chat_id, user_id, title, channel)
+        return self.repo.create_chat_session(chat_session_id, user_id, title, channel)
+
+    def list_messages(self, chat_session_id: str, user_id: str) -> tuple[ChatSession, list]:
+        chat_session = self.get_chat_session(chat_session_id=chat_session_id, user_id=user_id)
+        list_messages = self.repo.list_messages_by_chat_session(chat_session_id)
+        return chat_session, list_messages
+    
+    def get_last_interaction(self, chat_session_id: str, user_id:str):
+        _, rows = self.list_messages(chat_session_id=chat_session_id, user_id=user_id)
+        
+        user_row = next((m for m in reversed(rows) if m.role == "user"), None)
+        assistant_row = next((m for m in reversed(rows) if m.role == "assistant"), None)
+
+        return user_row, assistant_row

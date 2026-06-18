@@ -10,7 +10,7 @@ ChannelType = Literal["web", "cli", "app"]
 FinishReason = Literal["stop", "length", "tool_calls", "content_filter", "function_call"]
 
 
-class ChatMessage(BaseModel):
+class ChatMessageOpenAI(BaseModel):
     """Uma mensagem no histórico do chat."""
 
     model_config = ConfigDict(
@@ -74,7 +74,7 @@ class ChatCompletionRequest(BaseModel):
         description="Identificador do modelo no servidor de inferência (ex.: nome do modelo Ollama).",
         examples=["llama3", "mistral"],
     )
-    messages: list[ChatMessage] = Field(
+    messages: list[ChatMessageOpenAI] = Field(
         min_length=1,
         description="Histórico de mensagens. Deve conter pelo menos uma com `role=user`.",
     )
@@ -121,7 +121,7 @@ class ChatCompletionRequest(BaseModel):
 
     @field_validator("messages")
     @classmethod
-    def validate_messages_count(cls, v: list[ChatMessage]) -> list[ChatMessage]:
+    def validate_messages_count(cls, v: list[ChatMessageOpenAI]) -> list[ChatMessageOpenAI]:
         if len(v) > CHAT_MAX_MESSAGES:
             msg = f"messages excede o limite de {CHAT_MAX_MESSAGES}"
             raise ValueError(msg)

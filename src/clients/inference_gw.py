@@ -19,4 +19,5 @@ class InferenceGateway:
         data = request.model_dump(exclude_none=True)
         data.pop("session_id", None)
         data.pop("channel", None)
+        print("[inference payload]", data)
         return self._provider.chat_completions(data)

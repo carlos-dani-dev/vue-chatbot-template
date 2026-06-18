@@ -27,8 +27,9 @@ class ChatSession(Base):
     id: Mapped[uuid.UUID]=mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID]=mapped_column(Uuid, ForeignKey("users.id"), nullable=False)
     title: Mapped[str]=mapped_column(String)
-    channel: Mapped[str]=mapped_column(String)
-    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.now(UTC))
+    channel: Mapped[str]=mapped_column(String, default="web")
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    chat_session_summary: Mapped[str]=mapped_column(String, default="", nullable=True)
     session_metadata: Mapped[dict[str, any]]=mapped_column(JSON)
 
     user: Mapped["User"]=relationship("User", back_populates="chat_sessions")
@@ -42,9 +43,6 @@ class ChatMessage(Base):
     session_id: Mapped[uuid.UUID]=mapped_column(Uuid, ForeignKey("chat_sessions.id"), nullable=False)
     role: Mapped[str]=mapped_column(String, nullable=False)
     content: Mapped[str]=mapped_column(String, nullable=False)
-    timestamp: Mapped[datetime]=mapped_column(DateTime, nullable=False)
-    tokens_input: Mapped[int]=mapped_column(Integer, nullable=False)
-    tokens_output: Mapped[int]=mapped_column(Integer, nullable=False)
-    message_metadata: Mapped[dict[str, any]]=mapped_column(JSON)
+    created_at: Mapped[datetime]=mapped_column(DateTime, nullable=False)
 
     session: Mapped[list["ChatSession"]]=relationship("ChatSession", back_populates="messages")

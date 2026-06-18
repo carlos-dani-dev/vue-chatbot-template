@@ -57,6 +57,7 @@ async def list_user_chat_sessions(
             user_id=cs.user_id,
             title=cs.title,
             created_at=cs.created_at,
+            channel=cs.channel,
             session_metadata=cs.session_metadata
         )
         user_sessions_list.append(chat_session_response)
@@ -105,6 +106,7 @@ async def create_chat_session(
     return ChatSessionResponse(id=chat_session_model.id,
                                user_id=chat_session_model.user_id,
                                title=chat_session_model.title,
+                               created_at=chat_session_model.created_at,
                                channel=chat_session_model.channel,
                                session_metadata=chat_session_model.session_metadata)
 
