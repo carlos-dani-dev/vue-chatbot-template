@@ -19,7 +19,7 @@ class ChatSessionResponse(BaseModel):
 class CreateChatSessionRequest(BaseModel):
     title: str
     channel: str
-    chat_id: UUID
+    #chat_id: UUID
     session_metadata: dict[str, Any]
 
 

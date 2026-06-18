@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 
-from ..schemas.auth import TokenResponse
+from ..schemas.auth_schema import TokenResponse
 from ..schemas.chat_session_schema import ChatSessionResponse, CreateChatSessionRequest, ChatSessionListResponse
 from ..models import ChatSession, User
 from ..services.chat_session_service import ChatSessionService
@@ -94,7 +94,7 @@ async def create_chat_session(
     chat_service_dependency: Annotated[Session, Depends(get_chat_service)]
 ):
     chat_session_model = chat_service_dependency.create_chat_session(
-        payload.chat_id,
+        None,
         user["user_id"],
         "Título do Chat_Session",
         payload.channel

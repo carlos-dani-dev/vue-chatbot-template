@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 
-from ..schemas.auth import TokenResponse
+from ..schemas.auth_schema import TokenResponse
 from ..schemas.chat_message_schema import MessageListResponse, ChatMessage, SendChatMessageResponse, SendChatMessageRequest
 from ..models import ChatSession, User
 from ..services.chat_session_service import ChatSessionService

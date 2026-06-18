@@ -3,9 +3,6 @@ from datetime import UTC, datetime
 
 from ..exceptions.exceptions import ChatSessionNotFoundError
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from ..models import ChatMessage
 from ..models import ChatSession
 
