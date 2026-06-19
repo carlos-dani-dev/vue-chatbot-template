@@ -1,7 +1,10 @@
+from .routes import auth
+
+from .routes import chat_message
 from fastapi import FastAPI
 from .database import engine
 from .models import Base
-from .routes import auth, chat_session, chat_message
+from .routes import chat_session
 
 app = FastAPI(
     tittle="The unnoficial world cup chatbot",

@@ -12,7 +12,6 @@ class ChatSessionRepository():
         self.db = db
     
 
-
     def list_chat_sessions_by_user_id(self, user_id: str):
         return self.db.query(ChatSession).filter((ChatSession.user_id == user_id)).all()
 

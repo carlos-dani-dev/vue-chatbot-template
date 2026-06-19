@@ -1,14 +1,16 @@
-from uuid import UUID
-from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Json
+from pydantic import BaseModel, EmailStr
 
 
 class CreateUserRequest(BaseModel):
-    id: UUID
     email: EmailStr
     username: str
     password: str
+    role: str
+
+
+class CreateUserResponse(BaseModel):
+    email: EmailStr
+    username: str
     role: str
 
 

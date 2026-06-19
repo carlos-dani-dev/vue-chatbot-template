@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 
-from ..schemas.auth_schema import TokenResponse
+from ..schemas.user_schema import TokenResponse
 from ..schemas.chat_session_schema import ChatSessionResponse, CreateChatSessionRequest, ChatSessionListResponse
 from ..models import ChatSession, User
 from ..services.chat_session_service import ChatSessionService
@@ -14,7 +14,7 @@ from ..services.user_service import UserService
 from ..clients.inference_gw import InferenceGateway
 from ..clients.inference_client import InferenceHttpClient
 
-from .auth import get_current_user
+from ..services.user_service import get_current_user
 
 router = APIRouter(
     prefix="/chats",
@@ -36,14 +36,11 @@ def get_chat_service(
 ) -> ChatSessionService:
     return ChatSessionService(db, gateway)
 
-def get_user_service(db: Session = Depends(get_db)) -> UserService:
-    return UserService(db)
-
 
 @router.get("", response_model=ChatSessionListResponse, status_code=status.HTTP_200_OK)
 async def list_user_chat_sessions(
     user: Annotated[Dict, Depends(get_current_user)],
-    chat_service_dependency: Annotated[Session, Depends(get_chat_service)]
+    chat_service_dependency: Annotated[ChatSessionService, Depends(get_chat_service)]
 ):
     
     chat_sessions = chat_service_dependency.list_chat_sessions_by_user(user["user_id"])
@@ -69,7 +66,7 @@ async def list_user_chat_sessions(
 async def get_user_chat_session(
     user: Annotated[Dict, Depends(get_current_user)],
     chat_session_id: str,
-    chat_service_dependency: Annotated[Session, Depends(get_chat_service)]
+    chat_service_dependency: Annotated[ChatSessionService, Depends(get_chat_service)]
 ):
 
     chat_session = chat_service_dependency.get_chat_session(chat_session_id, user["user_id"])
@@ -91,7 +88,7 @@ async def get_user_chat_session(
 async def create_chat_session(
     user: Annotated[Dict, Depends(get_current_user)],
     payload: CreateChatSessionRequest,
-    chat_service_dependency: Annotated[Session, Depends(get_chat_service)]
+    chat_service_dependency: Annotated[ChatSessionService, Depends(get_chat_service)]
 ):
     chat_session_model = chat_service_dependency.create_chat_session(
         None,

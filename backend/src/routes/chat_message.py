@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 
-from ..schemas.auth_schema import TokenResponse
+from ..schemas.user_schema import TokenResponse
 from ..schemas.chat_message_schema import MessageListResponse, ChatMessage, SendChatMessageResponse, SendChatMessageRequest
 from ..models import ChatSession, User
 from ..services.chat_session_service import ChatSessionService
@@ -56,7 +56,7 @@ def serialize_chat_message(message) -> dict:
 async def list_chat_session_messages(
     chat_id: str,
     user: Annotated[Dict, Depends(get_current_user)],
-    chat_service_dependency: Annotated[Session, Depends(get_chat_service)] 
+    chat_service_dependency: Annotated[ChatSessionService, Depends(get_chat_service)] 
 ):
     try:
         chat_session, list_messages = chat_service_dependency.list_messages(chat_id, user["user_id"])
@@ -73,7 +73,7 @@ async def list_chat_session_messages(
 @router.post("/{chat_id}/messages", response_model=SendChatMessageResponse)
 async def send_message(chat_id: str, payload: SendChatMessageRequest,
     user: Annotated[Dict, Depends(get_current_user)],
-    chat_service_dependency: Annotated[Session, Depends(get_chat_service)] 
+    chat_service_dependency: Annotated[ChatSessionService, Depends(get_chat_service)] 
 ) -> SendChatMessageResponse:
     try:
         chat_session = chat_service_dependency.get_chat_session(chat_id, user["user_id"])
