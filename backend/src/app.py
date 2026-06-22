@@ -1,3 +1,5 @@
+from fastapi.middleware.cors import CORSMiddleware
+
 from .routes import auth
 
 from .routes import chat_message
@@ -10,6 +12,14 @@ app = FastAPI(
     tittle="The unnoficial world cup chatbot",
     description="Multi user chatbot with session autentication using gemini and langchain", 
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # a origem do seu frontend Vite
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth.router)

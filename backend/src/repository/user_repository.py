@@ -5,8 +5,8 @@ class UserRepository:
     def __init__(self, db):
         self.db = db
 
-    def get_user_by_username(self, username: str):
-        return self.db.query(User).filter(User.username == username).first()
+    def get_user_by_email(self, email: str):
+        return self.db.query(User).filter(User.email == email).first()
 
     def get_user_by_id(self, user_id: str):
         return self.db.query(User).filter(User.id == user_id).first()
