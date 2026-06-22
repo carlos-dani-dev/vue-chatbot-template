@@ -1,9 +1,11 @@
 <script setup>
+import SideBarMenu from '@/components/layout/SideBarMenu.vue';
+
 
 </script>
 
 <template>
-    <router-view></router-view>
+    <SideBarMenu></SideBarMenu>
 </template>
 
 <style scoped>

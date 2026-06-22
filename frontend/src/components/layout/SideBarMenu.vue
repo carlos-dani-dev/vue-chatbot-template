@@ -100,7 +100,6 @@
     animation: spin 1s linear infinite;
   }
 
-  /* Shared Swing Keyframes */
   @keyframes spin {
     0% {
       transform: rotate(0deg);

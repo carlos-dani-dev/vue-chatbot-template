@@ -6,7 +6,7 @@
 </script>
 
 <template>
-    <SideBarMenu></SideBarMenu>
+    <router-view></router-view>
 </template>
 
 <style scoped>
