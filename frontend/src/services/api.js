@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/auth'
+import { errorMessages } from 'vue/compiler-sfc'
 
 const BASE_URL = 'http://localhost:8000'
 
@@ -22,6 +23,30 @@ export const signin = async (email, password) => {
     }
 
     return await response.json() // { access_token, token_type }
+}
+
+export const signup = async (email, username, password, role) => {
+    const payload = {
+        email: email,
+        username: username,
+        password: password,
+        role: role
+    }
+
+    const response = await fetch(`${BASE_URL}/auth`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+    })
+
+    if (!response.ok) {
+        const errorBody = await response.json()
+        const errorMessage = errorBody.detail
+        throw new Error(errorMessage)
+    }
 }
 
 export const refreshAccessToken = async () => {

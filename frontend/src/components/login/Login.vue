@@ -3,7 +3,7 @@
     import { ref } from 'vue';
     import { useAuthStore } from '@/stores/auth'
     import { signin } from '@/services/api'
-    import router from '@/router';
+    import router from '@/router/router';
 
     const authStore = useAuthStore() 
 
@@ -71,7 +71,7 @@
                 Login
             </button>
             <p class='text-center py-8'>
-                Ainda não possui uma conta? <a href="/signup" class="text-indigo-600 hover:underline">Registre-se</a>
+                Ainda não possui uma conta? <router-link to="/signup" class="text-indigo-600 hover:underline">Registre-se</router-link>
             </p>
         </form>
     </main>

@@ -1,7 +1,6 @@
 <script setup>
     import SideBarMenu from './components/layout/SideBarMenu.vue';
-
-
+    
 
 </script>
 

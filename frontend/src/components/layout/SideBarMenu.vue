@@ -1,11 +1,23 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, onMounted } from 'vue'
+    import { getUserSessions } from '@/services/chat_session'
     import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
     import { XMarkIcon } from '@heroicons/vue/24/outline'
     import TriondaIcon from '@/assets/icons/trionda_icon.svg?component'
     import WCTrophyIcon from '@/assets/icons/wc-trophy-icon.svg?component'
+    import AddSession from '@/assets/icons/add-session.svg?component'
+
+    const sessoes = ref()
+
+    onMounted(async () => {
+        const response = await getUserSessions();
+        sessoes.value = response.items;
+        console.log(sessoes.value)
+        
+    })
 
     const open = ref(true)
+
 </script>
 
 <template>
@@ -36,21 +48,31 @@
                         </div>
                         </TransitionChild>
                         <div class="relative flex h-full flex-col overflow-y-auto bg-white py-6 shadow-xl">
-                        <div class="px-4 sm:px-6">
-                            <DialogTitle class="text-base font-semibold text-gray-900">Sessões</DialogTitle>
-                        </div>
-                        <div class="relative mt-6 flex-1 px-4 sm:px-6">
-                            <ul>
-                                <li>
-                                    <a class="sessions-a w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-sidebar-nav-foreground rounded-lg hover:bg-sidebar-nav-hover focus:outline-hidden focus:bg-sidebar-nav-focus" href="#">
-                                        <TriondaIcon class="trionda-icon"></TriondaIcon>
-                                        Sessão 1
-                                    </a>
-                                </li>
-                            </ul>
-                        
-                        
-                        </div>
+                            <div class="px-4 sm:px-6">
+                                <DialogTitle class="text-base font-semibold text-gray-900">Sessões</DialogTitle>
+                            </div>
+
+                            <div class="group cursor-pointer">
+                                <hr class="w-4/5 mx-auto mt-4 mb-0 border-gray-300 transition-colors duration-200 group-hover:border-black" />
+
+                                <a class="new-session-a w-full flex items-center justify-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-500 group-hover:text-black transition-colors duration-200" href="#">
+                                    <AddSession class="add-session-icon"></AddSession>
+                                    <p class="text-sm font-semibold">Nova sessão</p>
+                                </a>
+
+                                <hr class="w-4/5 mx-auto mt-0 border-gray-300 transition-colors duration-200 group-hover:border-black" />
+                            </div>
+
+                            <div class="relative mt-4 flex-1 px-4 sm:px-6">
+                                <ul>
+                                    <li v-for="sessao in sessoes" :key="sessao.id">
+                                        <a class="sessions-a w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-sidebar-nav-foreground rounded-lg hover:bg-sidebar-nav-hover focus:outline-hidden focus:bg-sidebar-nav-focus" href="#">
+                                            <TriondaIcon class="trionda-icon"></TriondaIcon>
+                                            <p class="text-sm font-semibold text-gray-800">{{sessao.title}}</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </DialogPanel>
                     </TransitionChild>
@@ -87,6 +109,31 @@
 
   .open-menu-btn:hover .wc-trophy-icon {
     color: black; 
+    }
+
+    .new-session-a {
+        /* Removemos a cor e o hover daqui, o Tailwind assume isso */
+        cursor: pointer;
+    }
+
+    .add-session-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+        /* Removemos a cor fixa daqui */
+        fill: currentColor;
+        stroke: currentColor;
+        transition: all 0.3s ease; 
+    }
+
+    .new-session-a:hover .add-session-icon {
+        color: black; 
+    }
+    .new-session-a:hover .hr {
+        color: black; 
+    }
+    .new-session-a:hover {
+        color: black; 
     }
 
   .trionda-icon {
