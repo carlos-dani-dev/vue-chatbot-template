@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-import Home from '@/components/home/Home.vue'
 import Login from '@/components/login/Login.vue'
 import Signup from '@/components/login/Signup.vue'
+import Chat from '@/components/home/Chat.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {path: "/login", component: Login},
     {path: "/signup", component: Signup},
-    {path: "/", component: Home}
+    {path: "/chats/:chatId?", component: Chat}
   ]
 })
 

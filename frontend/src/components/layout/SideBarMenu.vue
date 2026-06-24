@@ -53,23 +53,22 @@
                             </div>
 
                             <div class="group cursor-pointer">
-                                <hr class="w-4/5 mx-auto mt-4 mb-0 border-gray-300 transition-colors duration-200 group-hover:border-black" />
-
-                                <a class="new-session-a w-full flex items-center justify-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-500 group-hover:text-black transition-colors duration-200" href="#">
+                                
+                                <router-link to="/chats" class="new-session-a w-full flex items-center justify-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-500 group-hover:text-black transition-colors duration-200" href="#">
                                     <AddSession class="add-session-icon"></AddSession>
                                     <p class="text-sm font-semibold">Nova sessão</p>
-                                </a>
+                                </router-link>
 
-                                <hr class="w-4/5 mx-auto mt-0 border-gray-300 transition-colors duration-200 group-hover:border-black" />
                             </div>
 
                             <div class="relative mt-4 flex-1 px-4 sm:px-6">
                                 <ul>
                                     <li v-for="sessao in sessoes" :key="sessao.id">
-                                        <a class="sessions-a w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-sidebar-nav-foreground rounded-lg hover:bg-sidebar-nav-hover focus:outline-hidden focus:bg-sidebar-nav-focus" href="#">
+                                        <router-link :to="`/chats/${sessao.id}`" 
+                                            class="sessions-a w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-sidebar-nav-foreground rounded-lg hover:bg-sidebar-nav-hover focus:outline-hidden focus:bg-sidebar-nav-focus" href="#">
                                             <TriondaIcon class="trionda-icon"></TriondaIcon>
                                             <p class="text-sm font-semibold text-gray-800">{{sessao.title}}</p>
-                                        </a>
+                                        </router-link>
                                     </li>
                                 </ul>
                             </div>

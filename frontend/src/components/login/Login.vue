@@ -16,7 +16,7 @@
         try{
             const data = await signin(signinForm.value.email, signinForm.value.password)
             authStore.setAccessToken(data.access_token)
-            router.push("/")
+            router.push("/chats")
         } catch(error){
             console.log(error.message);
         }
