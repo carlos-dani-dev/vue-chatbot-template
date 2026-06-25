@@ -93,7 +93,7 @@ async def create_chat_session(
     chat_session_model = chat_service_dependency.create_chat_session(
         None,
         user["user_id"],
-        "Título do Chat_Session",
+        payload.title,
         payload.channel
     )
 

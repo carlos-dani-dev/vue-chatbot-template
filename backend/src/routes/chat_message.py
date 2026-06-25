@@ -20,8 +20,8 @@ from ..exceptions.exceptions import ChatSessionNotFoundError
 from .auth import get_current_user
 
 router = APIRouter(
-    prefix="/messages",
-    tags=["messages"]
+    prefix="/chats",
+    tags=["chats"]
 )
 
 
@@ -84,6 +84,9 @@ async def send_message(chat_id: str, payload: SendChatMessageRequest,
     if payload.system_prompt:
         messages.append(ChatMessageOpenAI(role="system", content=payload.system_prompt))
     messages.append(ChatMessageOpenAI(role="user", content=payload.content))
+    
+    print(messages)
+
     request = ChatCompletionRequest(
         model=payload.model,
         messages=messages,
