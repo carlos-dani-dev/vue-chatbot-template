@@ -6,15 +6,16 @@
     import TriondaIcon from '@/assets/icons/trionda_icon.svg?component'
     import WCTrophyIcon from '@/assets/icons/wc-trophy-icon.svg?component'
     import AddSession from '@/assets/icons/add-session.svg?component'
+    import { useChatSessionsStore } from '@/stores/chat_session_store'
 
-    const sessoes = ref()
+    const sessoes = ref();
+    const sessionsStore = useChatSessionsStore();
 
-    onMounted(async () => {
-        const response = await getUserSessions();
-        sessoes.value = response.items;
-        console.log(sessoes.value)
-        
-    })
+    async function load_chat_session(){
+        await sessionsStore.loadSessions();    
+    }
+
+    onMounted(load_chat_session);
 
     const open = ref(true)
 
@@ -63,7 +64,7 @@
 
                             <div class="relative mt-4 flex-1 px-4 sm:px-6">
                                 <ul>
-                                    <li v-for="sessao in sessoes" :key="sessao.id">
+                                    <li v-for="sessao in sessionsStore.sessions" :key="sessao.id">
                                         <router-link :to="`/chats/${sessao.id}`" 
                                             class="sessions-a w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-sidebar-nav-foreground rounded-lg hover:bg-sidebar-nav-hover focus:outline-hidden focus:bg-sidebar-nav-focus" href="#">
                                             <TriondaIcon class="trionda-icon"></TriondaIcon>

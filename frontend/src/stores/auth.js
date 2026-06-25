@@ -22,4 +22,4 @@ export const useAuthStore = defineStore('auth', {
             localStorage.removeItem('access_token')
         }
     }
-})
+})  

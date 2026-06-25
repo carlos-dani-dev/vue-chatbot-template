@@ -1,15 +1,20 @@
 <script setup>
   import { defineProps } from 'vue';
+  import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
 
   const props = defineProps(['messageContent', 'messageRole'])
+
+  const formattedMessage = DOMPurify.sanitize(marked.parse(props.messageContent));
 
 </script>
 
 <template>
     <div class="toast">
         <div class="toast-content">
-          <p>{{ props.messageRole }}</p>  
-          <p>{{ props.messageContent }}</p>
+          <p>{{ props.messageRole }}</p>
+          <br>
+          <p v-html="formattedMessage"></p>
         </div>
         <div class="toast-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -24,7 +29,6 @@
   .toast {
     bottom: 20px;
     right: 20px;
-    background-color: #333;
     color: #fff;
     padding: 10px;
     border-radius: 5px;

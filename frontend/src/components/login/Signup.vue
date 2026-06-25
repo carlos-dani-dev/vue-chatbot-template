@@ -30,7 +30,7 @@
 <template>
     <main class="flex items-center min-h-screen justify-center w-full px-4">
         <form @submit.prevent="signup_" id="signup-form" class="flex w-full flex-col max-w-96">
-
+            
             <div class="flex items-center justify-center gap-20">
                 <h2 class="text-3xl font-medium font-semibold text-gray-900">Sign up</h2>               
             </div>
