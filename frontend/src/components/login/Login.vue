@@ -1,11 +1,11 @@
 <script setup>
-    import WCTrophyIcon from '@/assets/icons/wc-trophy-icon.svg?component'
+    import WCTrophyIcon from '@/assets/icons/wc-trophy-icon.svg?component';
     import { ref } from 'vue';
-    import { useAuthStore } from '@/stores/auth'
-    import { signin } from '@/services/api'
+    import { useAuthStore } from '@/stores/auth';
+    import { signin } from '@/services/api';
     import router from '@/router/router';
 
-    const authStore = useAuthStore() 
+    const authStore = useAuthStore();
 
     const signinForm = ref({
         email: '',

@@ -1,14 +1,11 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
-    import { getUserSessions } from '@/services/chat_session'
+    import { ref, onMounted, defineEmits, defineProps, computed } from 'vue'
     import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
     import { XMarkIcon } from '@heroicons/vue/24/outline'
     import TriondaIcon from '@/assets/icons/trionda_icon.svg?component'
-    import WCTrophyIcon from '@/assets/icons/wc-trophy-icon.svg?component'
     import AddSession from '@/assets/icons/add-session.svg?component'
     import { useChatSessionsStore } from '@/stores/chat_session_store'
 
-    const sessoes = ref();
     const sessionsStore = useChatSessionsStore();
 
     async function load_chat_session(){
@@ -17,19 +14,24 @@
 
     onMounted(load_chat_session);
 
-    const open = ref(true)
+    const props = defineProps(['sideBarMenuOpen']);
+    const emit = defineEmits(['update:sideBarMenuOpen']);
+
+    const open = computed({
+        get(){
+            return props.sideBarMenuOpen
+        },
+        set(value){
+            emit('update:sideBarMenuOpen', value);
+        }
+    })
 
 </script>
 
 <template>
     <div>
-        <button class="open-menu-btn rounded-md bg-white text-sm font-semibold text-gray-900 hover:bg-sidebar-nav-hover" @click="open = true">
-            <WCTrophyIcon class="wc-trophy-icon"></WCTrophyIcon>
-            <span class="text-sm text-sidebar-nav-foreground">WorldCup Chatbot</span>
-        </button>
-        
         <TransitionRoot as="template" :show="open">
-            <Dialog class="relative z-10" @close="open = false">
+            <Dialog class="relative z-20" @close="open = false">
             <TransitionChild as="template" enter="ease-in-out duration-500" enter-from="opacity-0" enter-to="" leave="ease-in-out duration-500" leave-from="" leave-to="opacity-0">
                 <div class="fixed inset-0 bg-gray-500/75 transition-opacity"></div>
             </TransitionChild>
@@ -55,17 +57,17 @@
 
                             <div class="group cursor-pointer">
                                 
-                                <router-link to="/chats" class="new-session-a w-full flex items-center justify-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-500 group-hover:text-black transition-colors duration-200" href="#">
+                                <router-link to="/chats" @click="open = false" class="new-session-a w-full flex items-center justify-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-500 group-hover:text-black transition-colors duration-200" href="#">
                                     <AddSession class="add-session-icon"></AddSession>
                                     <p class="text-sm font-semibold">Nova sessão</p>
                                 </router-link>
 
                             </div>
 
-                            <div class="relative mt-4 flex-1 px-4 sm:px-6">
+                            <div class="relaive mt-4 flex-1 px-4 sm:px-6">
                                 <ul>
                                     <li v-for="sessao in sessionsStore.sessions" :key="sessao.id">
-                                        <router-link :to="`/chats/${sessao.id}`" 
+                                        <router-link :to="`/chats/${sessao.id}`" @click="open = false" 
                                             class="sessions-a w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-sidebar-nav-foreground rounded-lg hover:bg-sidebar-nav-hover focus:outline-hidden focus:bg-sidebar-nav-focus" href="#">
                                             <TriondaIcon class="trionda-icon"></TriondaIcon>
                                             <p class="text-sm font-semibold text-gray-800">{{sessao.title}}</p>
@@ -85,32 +87,6 @@
 </template>
 
 <style scoped>
-  .open-menu-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    height: 40px;
-    width: 200px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-
-  .wc-trophy-icon {
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-    color: rgba(107, 114, 128); 
-    fill: currentColor;
-    stroke: currentColor;
-    
-    transition: all 0.3s ease; 
-  }
-
-  .open-menu-btn:hover .wc-trophy-icon {
-    color: black; 
-    }
-
     .new-session-a {
         /* Removemos a cor e o hover daqui, o Tailwind assume isso */
         cursor: pointer;
