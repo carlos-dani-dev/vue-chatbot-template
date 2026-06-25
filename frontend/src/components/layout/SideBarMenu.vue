@@ -23,7 +23,7 @@
 
 <template>
     <div>
-        <button class="open-menu-btn rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 hover:bg-sidebar-nav-hover" @click="open = true">
+        <button class="open-menu-btn rounded-md bg-white text-sm font-semibold text-gray-900 hover:bg-sidebar-nav-hover" @click="open = true">
             <WCTrophyIcon class="wc-trophy-icon"></WCTrophyIcon>
             <span class="text-sm text-sidebar-nav-foreground">WorldCup Chatbot</span>
         </button>

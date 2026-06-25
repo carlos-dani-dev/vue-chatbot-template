@@ -2,12 +2,9 @@
     import { ref, computed, onMounted, watch } from "vue";
     import { useRoute, useRouter } from "vue-router";
 
-    import { getChatMessages, sendChatMessage } from '@/services/chat_messages'
-    import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
-    import loaderUrl from '@/assets/animations/loader.lottie?url'
-    
     import SideBarMenu from '@/components/layout/SideBarMenu.vue';
     import SendMessageIcon from "@/assets/icons/send-message-icon.svg?component"
+    import ProfileIcon from "@/assets/icons/profile_icon.svg?component"
     import Message from "@/components/home/Message.vue"
     import { createChat } from "@/services/chat_session";
     import { useChatSessionsStore } from "@/stores/chat_session_store";
@@ -69,10 +66,10 @@
 </script>
 
 <template>
-    <SideBarMenu></SideBarMenu>
-    <div class="flex flex-col min-h-screen justify-center ">
+    <SideBarMenu class="fixed"></SideBarMenu>
+    <div class="flex flex-col h-screen justify-center ">
 
-        <div class="chat-messages flex w-full justify-center mb-5">
+        <div class="chat-messages overflow-y-auto flex w-full justify-center mt-2">
             <ul class="flex flex-col w-3/5 gap-2">
                 
                 <li v-for="message in messages" :key="message.id" :class="message.role == 'user' ? 'pl-40' : 'pr-40'" class="w-full">
@@ -87,8 +84,9 @@
             </ul>
         </div>
         
-        <div class="chat-text-input flex w-full">
-            <form @submit.prevent="send_message_" class="flex w-full mb-5 justify-center items-center gap-2">
+        <div class="chat-text-input mb-5 flex w-full">
+            <ProfileIcon class=" absolute ml-5"></ProfileIcon>
+            <form @submit.prevent="send_message_" class="flex w-full justify-center items-center gap-2">
                 <input
                     v-model="messageContent"
                     class="peer text-sm custom-input w-4/5 px-4 py-2 border border-gray-300 rounded-lg shadow-sm transition duration-300 ease-in-out transform focus:-translate-y-1 focus:outline-gray-300 hover:shadow-lg hover:border-gray-500 bg-gray-100"
@@ -109,7 +107,11 @@
 </template>
 
 <style scoped>
-    /* HTML: <div class="loader"></div> */
+
+.chat-text-input{
+    background-color: transparent;
+}
+
 .loader {
   width: 30px;
   aspect-ratio: 4;
