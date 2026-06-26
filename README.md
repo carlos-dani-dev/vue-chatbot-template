@@ -23,5 +23,6 @@ da Copa do Mundo de seleções FIFA 2026
 ## Requirements
 Para instalar os requisitos para execução do **Backend** com o gerenciador e pacotes **Poetry** rode:
 ``` poetry install ```
+
 Para instalar os requisitos para execução do **Frontend** rode:
 ``` npm install ```
