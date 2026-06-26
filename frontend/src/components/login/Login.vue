@@ -1,5 +1,5 @@
 <script setup>
-    import WCTrophyIcon from '@/assets/icons/wc-trophy-icon.svg?component';
+    
     import { ref } from 'vue';
     import { useAuthStore } from '@/stores/auth';
     import { signin } from '@/services/api';
@@ -29,12 +29,7 @@
         <form @submit.prevent="signin_" id="signin-form" class="flex w-full flex-col max-w-96">
 
             <div class="flex items-center justify-center gap-20">
-                <h2 class="text-3xl font-medium font-semibold text-gray-900">Sign in</h2>
-                <a class="logo-a flex items-center">
-                    <WCTrophyIcon class="wc-trophy-icon mb-5"></WCTrophyIcon>
-                    <span class="font-semibold">WorldCup Chatbot</span>
-                </a>
-                
+                <h2 class="text-3xl font-medium font-semibold text-gray-900">Sign in</h2>               
             </div>
             <p class="mt-4 text-base text-gray-500/90">
                 Por favor, insira um email e uma senha para acessar.

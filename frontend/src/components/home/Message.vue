@@ -10,13 +10,13 @@
 </script>
 
 <template>
-    <div class="toast">
-        <div class="toast-content">
+    <div class="main">
+        <div class="message">
           <p>{{ props.messageRole }}</p>
           <br>
           <p v-html="formattedMessage"></p>
         </div>
-        <div class="toast-icon">
+        <div class="icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M15.795 8.342l-5.909 9.545a1 1 0 0 1-1.628 0l-3.182-4.909a1 1 0 0 1 1.629-1.165l2.556 3.953L14.165 7.51a1 1 0 0 1 1.63 1.165z"></path>
@@ -26,7 +26,7 @@
 </template>
 
 <style scoped>
-  .toast {
+  .main {
     bottom: 20px;
     right: 20px;
     color: #fff;
@@ -38,13 +38,13 @@
     justify-content: space-between;
   }
 
-  .toast-icon svg {
+  .icon svg {
     width: 30px;
     height: 20px;
     fill: #fff;
   }
 
-  .toast-content {
+  .content {
     font-family: Arial, sans-serif;
     font-size: 14px;
   }

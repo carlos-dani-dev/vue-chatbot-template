@@ -1,10 +1,12 @@
 <script setup>
-    import { ref, onMounted, defineEmits, defineProps, computed } from 'vue'
+    
+    import { onMounted, defineEmits, defineProps, computed } from 'vue'
     import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-    import { XMarkIcon } from '@heroicons/vue/24/outline'
-    import TriondaIcon from '@/assets/icons/trionda_icon.svg?component'
-    import AddSession from '@/assets/icons/add-session.svg?component'
     import { useChatSessionsStore } from '@/stores/chat_session_store'
+
+    import { XMarkIcon } from '@heroicons/vue/24/outline'
+    import PlusIcon from '@/assets/icons/plus-icon.svg?component'
+    
 
     const sessionsStore = useChatSessionsStore();
 
@@ -52,25 +54,24 @@
                         </TransitionChild>
                         <div class="relative flex h-full flex-col overflow-y-auto bg-white py-6 shadow-xl">
                             <div class="px-4 sm:px-6">
-                                <DialogTitle class="text-base font-semibold text-gray-900">Sessões</DialogTitle>
+                                <DialogTitle class="text-base font-semibold text-gray-900">Sessions</DialogTitle>
                             </div>
 
                             <div class="group cursor-pointer">
                                 
                                 <router-link to="/chats" @click="open = false" class="new-session-a w-full flex items-center justify-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-500 group-hover:text-black transition-colors duration-200" href="#">
-                                    <AddSession class="add-session-icon"></AddSession>
-                                    <p class="text-sm font-semibold">Nova sessão</p>
+                                    <PlusIcon class="plus-icon"></PlusIcon>
+                                    <p class="text-sm font-semibold">New session</p>
                                 </router-link>
 
                             </div>
 
                             <div class="relaive mt-4 flex-1 px-4 sm:px-6">
                                 <ul>
-                                    <li v-for="sessao in sessionsStore.sessions" :key="sessao.id">
-                                        <router-link :to="`/chats/${sessao.id}`" @click="open = false" 
+                                    <li v-for="session in sessionsStore.sessions" :key="session.id">
+                                        <router-link :to="`/chats/${session.id}`" @click="open = false" 
                                             class="sessions-a w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-sidebar-nav-foreground rounded-lg hover:bg-sidebar-nav-hover focus:outline-hidden focus:bg-sidebar-nav-focus" href="#">
-                                            <TriondaIcon class="trionda-icon"></TriondaIcon>
-                                            <p class="text-sm font-semibold text-gray-800">{{sessao.title}}</p>
+                                            <p class="text-sm font-semibold text-gray-800">{{session.title}}</p>
                                         </router-link>
                                     </li>
                                 </ul>
@@ -88,56 +89,25 @@
 
 <style scoped>
     .new-session-a {
-        /* Removemos a cor e o hover daqui, o Tailwind assume isso */
         cursor: pointer;
     }
 
-    .add-session-icon {
+    .plus-icon {
         width: 24px;
         height: 24px;
         flex-shrink: 0;
-        /* Removemos a cor fixa daqui */
+        color: rgba(107, 114, 128);
         fill: currentColor;
         stroke: currentColor;
-        transition: all 0.3s ease; 
+        transition: color 0.3s ease; 
     }
 
-    .new-session-a:hover .add-session-icon {
+    .new-session-a:hover .plus-icon,
+    .new-session-a:focus .plus-icon {
         color: black; 
     }
-    .new-session-a:hover .hr {
+    .new-session-a:hover,
+    .new-session-a:focus {
         color: black; 
     }
-    .new-session-a:hover {
-        color: black; 
-    }
-
-  .trionda-icon {
-    width: 25px;
-    height: 25px;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-  }
-
-  .sessions-a:hover .trionda-icon {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    25% {
-      transform: rotate(-8deg);
-    }
-    50% {
-      transform: rotate(0deg);
-    }
-    75% {
-      transform: rotate(8deg);
-    }
-    100% {
-      transform: rotate(0deg);
-    }
-  }
 </style>

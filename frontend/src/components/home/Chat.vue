@@ -1,16 +1,18 @@
 <script setup>
-    import { ref, computed, onMounted, watch, nextTick, defineEmits } from "vue";
+    import { ref, computed, onMounted, watch, nextTick } from "vue";
     import { useRoute, useRouter } from "vue-router";
 
     import SideBarMenu from '@/components/layout/SideBarMenu.vue';
     import ProfileMenu from "@/components/layout/ProfileMenu.vue";
+    import Message from "@/components/home/Message.vue"
 
     import SendMessageIcon from "@/assets/icons/send-message-icon.svg?component"
-    import WCTrophyIcon from '@/assets/icons/wc-trophy-icon.svg?component'
-    import ProfileIcon from "@/assets/icons/profile_icon.svg?component"
-    import Message from "@/components/home/Message.vue"
+    import MenuIcon from '@/assets/icons/menu-icon.svg?component'
+    import ProfileIcon from "@/assets/icons/profile-icon.svg?component"
+    
     import { createChat } from "@/services/chat_session";
     import { sendChatMessage } from "@/services/chat_messages";
+    
     import { useChatSessionsStore } from "@/stores/chat_session_store";
     import { useChatMessagesStore } from "@/stores/chat_messages_store";
 
@@ -63,7 +65,7 @@
                 router.replace(`/chats/${currentChatId}`)
             }
             
-            const system_prompt = "Você é um especialista e por isso deve ser breve, porém assertivo, em sua resposta.";
+            const system_prompt = "You are an expert and therefore should be brief, yet assertive, in your response.";
             const model = "llama3.2:3b";
 
             messagesStore.addMessage(currentChatId, {"role": "user", "content": content})            
@@ -97,7 +99,7 @@
     <div class="flex flex-col h-screen relative">
         
         <button class="open-menu-btn fixed left-5" @click="sideBarMenuOpen = true">
-            <WCTrophyIcon class="wc-trophy-icon"></WCTrophyIcon>
+            <MenuIcon class="menu-icon"></MenuIcon>
         </button>
 
         <div ref="chatMessagesRef" class="chat-messages overflow-y-auto flex-1 flex flex-col w-full items-center mt-2">
@@ -122,16 +124,16 @@
                         :disabled="isLoading"
                         v-model="messageContent"
                         class="peer text-sm custom-input w-4/5 px-4 py-2 border border-gray-300 rounded-lg shadow-sm transition duration-300 ease-in-out transform focus:-translate-y-1 focus:outline-gray-300 hover:shadow-lg hover:border-gray-500 bg-gray-100"
-                        placeholder="Pergunte qualquer coisa"
+                        placeholder="Ask anything"
                         type="text"
                         id="unique-input"
                     />
                     
                     <button 
                         type="submit"
-                        class="transition duration-300 ease-in-out transform peer-focus:-translate-y-1 text-gray-500 hover:text-gray-800 focus:outline-none"
+                        class="send-message-btn transition duration-300 ease-in-out transform peer-focus:-translate-y-1 focus:outline-none"
                     >
-                        <SendMessageIcon class="w-6 h-6"></SendMessageIcon>
+                        <SendMessageIcon class="send-message-icon w-6 h-6"></SendMessageIcon>
                     </button>
                 </form>
             </div>
@@ -155,7 +157,7 @@
     cursor: pointer;
 }
 
-.wc-trophy-icon {
+.menu-icon {
     width: 35px;
     height: 35px;
     flex-shrink: 0;
@@ -165,7 +167,8 @@
     transition: color 0.3s ease; 
 }
 
-.open-menu-btn:hover .wc-trophy-icon {
+.open-menu-btn:hover .menu-icon,
+.open-menu-btn:focus .menu-icon {
     color: black; 
 }
 
@@ -179,7 +182,24 @@
     transition: color 0.3s ease; 
 }
 
-.open-profile-btn:hover .profile-icon {
+.open-profile-btn:hover .profile-icon,
+.open-profile-btn:focus .profile-icon {
+    color: black;
+}
+
+.send-message-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: rgba(107, 114, 128);
+    fill: currentColor;
+    stroke: currentColor;
+    transition: color 0.3s ease;
+}
+
+.send-message-btn:hover .send-message-icon,
+.send-message-btn:focus .send-message-icon,
+.peer:focus + .send-message-btn .send-message-icon {
     color: black;
 }
 
