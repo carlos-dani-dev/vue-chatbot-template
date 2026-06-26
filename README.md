@@ -1,7 +1,6 @@
-# WorldCup Chatbot
-Chatbot baseado em vue que tira-dúvidas acerca
-da Copa do Mundo de seleções FIFA 2026
-
+# Chatbot Vue template
+Chatbot baseado em vue que que consome
+uma api OpenAI-Like
 
 ## Features
 
