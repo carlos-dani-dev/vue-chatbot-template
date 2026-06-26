@@ -1,6 +1,6 @@
 # Chatbot Vue template
 Chatbot baseado em vue que que consome
-uma api OpenAI-Like
+uma API OpenAI-Like
 
 ## Features
 
