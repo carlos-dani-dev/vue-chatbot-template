@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getChatMessages, sendChatMessage } from '@/services/chat_messages'
+import { getChatMessages, sendChatMessage } from '@/services/message'
 
 export const useChatMessagesStore = defineStore('chatMessages', {
     state: () => ({

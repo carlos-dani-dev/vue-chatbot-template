@@ -1,6 +1,6 @@
 <script setup>
     
-    import { onMounted, defineEmits, defineProps, computed } from 'vue'
+    import { onMounted, computed } from 'vue'
     import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
     import { useChatSessionsStore } from '@/stores/chat_session_store'
 
@@ -10,11 +10,11 @@
 
     const sessionsStore = useChatSessionsStore();
 
-    async function load_chat_session(){
+    async function loadChatSession(){
         await sessionsStore.loadSessions();    
     }
 
-    onMounted(load_chat_session);
+    onMounted(loadChatSession);
 
     const props = defineProps(['sideBarMenuOpen']);
     const emit = defineEmits(['update:sideBarMenuOpen']);

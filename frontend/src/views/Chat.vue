@@ -2,19 +2,22 @@
     import { ref, computed, onMounted, watch, nextTick } from "vue";
     import { useRoute, useRouter } from "vue-router";
 
-    import SideBarMenu from '@/components/layout/SideBarMenu.vue';
-    import ProfileMenu from "@/components/layout/ProfileMenu.vue";
-    import Message from "@/components/home/Message.vue"
+    import SideBarMenu from '@/components/SideBarMenu.vue';
+    import ProfileMenu from "@/components/ProfileMenu.vue";
+    import Message from "@/components/Message.vue"
 
     import SendMessageIcon from "@/assets/icons/send-message-icon.svg?component"
     import MenuIcon from '@/assets/icons/menu-icon.svg?component'
     import ProfileIcon from "@/assets/icons/profile-icon.svg?component"
     
-    import { createChat } from "@/services/chat_session";
-    import { sendChatMessage } from "@/services/chat_messages";
+    import { createChat } from "@/services/chat";
+    import { sendChatMessage } from "@/services/message";
     
     import { useChatSessionsStore } from "@/stores/chat_session_store";
     import { useChatMessagesStore } from "@/stores/chat_messages_store";
+
+    const system_prompt = "You are an expert and therefore should be brief, yet assertive, in your response.";
+    const model = "llama3.2:3b";
 
     const route = useRoute();
     const router = useRouter();
@@ -28,12 +31,12 @@
     const isLoading = ref(false)
     const messages = computed(() => messagesStore.currentMessages(chatId.value));
 
-    async function load_chat_messages(){
+    async function loadChatMessages(){
         await messagesStore.loadMessages(chatId.value);    
     }
     
-    onMounted(load_chat_messages);
-    watch(chatId, load_chat_messages);
+    onMounted(loadChatMessages);
+    watch(chatId, loadChatMessages);
     
     const chatMessagesRef = ref(null);
 
@@ -44,7 +47,7 @@
     }
 
     const messageContent = ref("")
-    async function send_message_(){
+    async function sendMessage(){
         
         if(!messageContent.value.trim()) return
         
@@ -53,21 +56,16 @@
 
         try{
             let currentChatId = chatId.value;
-
-            const channel = "web";
             const title = content.slice(0,30);
 
             if (!currentChatId){
-                const newChat = await createChat(title, channel);
+                const newChat = await createChat(title);
                 currentChatId = newChat.id;
                 console.log(newChat.title);
                 sessionsStore.addSessions(newChat);
                 router.replace(`/chats/${currentChatId}`)
             }
             
-            const system_prompt = "You are an expert and therefore should be brief, yet assertive, in your response.";
-            const model = "llama3.2:3b";
-
             messagesStore.addMessage(currentChatId, {"role": "user", "content": content})            
             isLoading.value = true;
 
@@ -119,7 +117,7 @@
             <div v-else class="flex-1"></div>
 
             <div class="chat-text-input sticky bottom-0 mb-5 pt-2 flex w-full bg-white">
-                <form @submit.prevent="send_message_" class="flex w-full justify-center items-center gap-2">
+                <form @submit.prevent="sendMessage" class="flex w-full justify-center items-center gap-2">
                     <input
                         :disabled="isLoading"
                         v-model="messageContent"

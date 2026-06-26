@@ -15,7 +15,7 @@
         return signupForm.value.password === pwdConfirmation.value// && signupForm.value.password !== ''
     })
 
-    const signup_= async () => {
+    const signUp = async () => {
         try{
             const data = await signup(signupForm.value.email, signupForm.value.username, signupForm.value.password, signupForm.value.role)
             router.push("/login")
@@ -29,7 +29,7 @@
 
 <template>
     <main class="flex items-center min-h-screen justify-center w-full px-4">
-        <form @submit.prevent="signup_" id="signup-form" class="flex w-full flex-col max-w-96">
+        <form @submit.prevent="signUp" id="signup-form" class="flex w-full flex-col max-w-96">
             
             <div class="flex items-center justify-center gap-20">
                 <h2 class="text-3xl font-medium font-semibold text-gray-900">Sign up</h2>               
@@ -91,6 +91,7 @@
 
             <button
                 type="submit"
+                :disabled="!pwdMatch"
                 class="login-btn mt-8 py-3 w-full cursor-pointer rounded-md text-white"
             >
                 Registrar-se

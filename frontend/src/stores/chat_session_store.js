@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getUserSessions } from '@/services/chat_session'
+import { getUserSessions } from '@/services/chat'
 
 
 export const useChatSessionsStore = defineStore('chatSessions', {

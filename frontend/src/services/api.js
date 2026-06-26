@@ -1,5 +1,4 @@
 import { useAuthStore } from '@/stores/auth'
-import { errorMessages } from 'vue/compiler-sfc'
 
 const BASE_URL = 'http://localhost:8000'
 

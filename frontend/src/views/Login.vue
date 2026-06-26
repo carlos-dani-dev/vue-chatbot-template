@@ -12,7 +12,7 @@
         password: ''
     });
 
-    const signin_ = async () => {
+    const signIn = async () => {
         try{
             const data = await signin(signinForm.value.email, signinForm.value.password)
             authStore.setAccessToken(data.access_token)
@@ -26,7 +26,7 @@
 
 <template>
     <main class="flex items-center min-h-screen justify-center w-full px-4">
-        <form @submit.prevent="signin_" id="signin-form" class="flex w-full flex-col max-w-96">
+        <form @submit.prevent="signIn" id="signin-form" class="flex w-full flex-col max-w-96">
 
             <div class="flex items-center justify-center gap-20">
                 <h2 class="text-3xl font-medium font-semibold text-gray-900">Sign in</h2>               

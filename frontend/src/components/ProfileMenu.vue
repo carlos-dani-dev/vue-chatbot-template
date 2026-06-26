@@ -1,5 +1,5 @@
 <script setup>
-    import { defineProps, defineEmits, ref, computed, onMounted, onUnmounted } from 'vue';
+    import { ref, computed, onMounted, onUnmounted } from 'vue';
     import { useAuthStore } from '@/stores/auth';
     import { useRouter } from 'vue-router';
 
@@ -33,7 +33,7 @@
         document.removeEventListener('click', handleClickOutside);
     })
 
-    const sign_out_ = async () => {
+    const signOut = async () => {
         try{
             authStore.logout();
             router.push("/login");
@@ -52,7 +52,7 @@
                 <a href="#" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Settings</a>
             </li>
             <li>
-                <a href="#" @click="sign_out_" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Sign out</a>
+                <a href="#" @click="signOut" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Sign out</a>
             </li>
         </ul>
     </div>
