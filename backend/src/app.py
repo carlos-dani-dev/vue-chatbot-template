@@ -1,12 +1,12 @@
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import auth
+from .routes import user_route
 
-from .routes import chat_message
+from .routes import message_route
 from fastapi import FastAPI
 from .database import engine
 from .models import Base
-from .routes import chat_session
+from .routes import chat_route
 
 app = FastAPI(
     tittle="The unnoficial world cup chatbot",
@@ -22,9 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(chat_session.router)
-app.include_router(chat_message.router)
+app.include_router(user_route.router)
+app.include_router(chat_route.router)
+app.include_router(message_route.router)
 
 @app.get('/healthy')
 def health_check():

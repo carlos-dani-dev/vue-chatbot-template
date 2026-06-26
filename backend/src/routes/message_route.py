@@ -1,46 +1,26 @@
+from typing import Annotated
 from starlette import status
-from typing import Annotated, Dict
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, APIRouter, HTTPException
 
-from sqlalchemy.orm import Session
-from ..database import SessionLocal
-
-from ..schemas.user_schema import TokenResponse
-from ..schemas.chat_message_schema import MessageListResponse, ChatMessage, SendChatMessageResponse, SendChatMessageRequest
-from ..models import ChatSession, User
-from ..services.chat_session_service import ChatSessionService
-from ..services.user_service import UserService
+# needed schemas
+from ..schemas.chat_message_schema import MessageListResponse, SendChatMessageResponse
+from ..schemas.chat_message_schema import SendChatMessageRequest
+from ..schemas.chat_message_schema import ChatMessage
 from ..schemas.openaiLike_schema import ChatCompletionRequest, ChatMessageOpenAI
+
+# needed models
+from ..models import User
+
+# needed dependencies
+from ..dependencies import get_chat_service, get_current_user, get_inference_gateway
+
+# needed services
+from ..services.chat_service import ChatService
 
 from ..clients.inference_gw import InferenceGateway
 from ..clients.inference_client import InferenceHttpClient
 
 from ..exceptions.exceptions import ChatSessionNotFoundError
-
-from .auth import get_current_user
-
-router = APIRouter(
-    prefix="/chats",
-    tags=["chats"]
-)
-
-
-def get_db():
-    db = SessionLocal()
-    try: yield db
-    finally: db.close()
-
-def get_inference_gateway() -> InferenceGateway:
-    return InferenceGateway(InferenceHttpClient())
-
-def get_chat_service(
-    db: Session = Depends(get_db),
-    gateway: InferenceGateway = Depends(get_inference_gateway),
-) -> ChatSessionService:
-    return ChatSessionService(db, gateway)
-
-def get_user_service(db: Session = Depends(get_db)) -> UserService:
-    return UserService(db)
 
 
 def serialize_chat_message(message) -> dict:
@@ -52,14 +32,18 @@ def serialize_chat_message(message) -> dict:
     }
 
 
+router = APIRouter(
+    prefix="/chats",
+    tags=["chats"]
+)
+
+
 @router.get("/{chat_id}/messages", response_model=MessageListResponse)
-async def list_chat_session_messages(
-    chat_id: str,
-    user: Annotated[Dict, Depends(get_current_user)],
-    chat_service_dependency: Annotated[ChatSessionService, Depends(get_chat_service)] 
-):
+async def list_chat_session_messages(CurrentUserDep: Annotated[User, Depends(get_current_user)],
+                                     ChatServiceDep: Annotated[ChatService, Depends(get_chat_service)],
+                                     chat_id: str):
     try:
-        chat_session, list_messages = chat_service_dependency.list_messages(chat_id, user["user_id"])
+        chat_session, list_messages = ChatServiceDep.list_messages(chat_id, CurrentUserDep["user_id"])
     except ChatSessionNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat não encontrado.") from exc
 
@@ -71,12 +55,12 @@ async def list_chat_session_messages(
 
 
 @router.post("/{chat_id}/messages", response_model=SendChatMessageResponse)
-async def send_message(chat_id: str, payload: SendChatMessageRequest,
-    user: Annotated[Dict, Depends(get_current_user)],
-    chat_service_dependency: Annotated[ChatSessionService, Depends(get_chat_service)] 
-) -> SendChatMessageResponse:
+async def send_message(CurrentUserDep: Annotated[User, Depends(get_current_user)],
+                       ChatServiceDep: Annotated[ChatService, Depends(get_chat_service)],
+                       chat_id: str,
+                       payload: SendChatMessageRequest) -> SendChatMessageResponse:
     try:
-        chat_session = chat_service_dependency.get_chat_session(chat_id, user["user_id"])
+        chat_session = ChatServiceDep.get_chat_session(chat_id, CurrentUserDep["user_id"])
     except ChatSessionNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat não encontrado.") from exc
     
@@ -85,8 +69,6 @@ async def send_message(chat_id: str, payload: SendChatMessageRequest,
         messages.append(ChatMessageOpenAI(role="system", content=payload.system_prompt))
     messages.append(ChatMessageOpenAI(role="user", content=payload.content))
     
-    print(messages)
-
     request = ChatCompletionRequest(
         model=payload.model,
         messages=messages,
@@ -96,16 +78,13 @@ async def send_message(chat_id: str, payload: SendChatMessageRequest,
     )
 
     try:
-        result=chat_service_dependency.handle(request, user)
+        result=ChatServiceDep.handle(request, CurrentUserDep)
     except Exception as exc:
         raise Exception from exc
 
-    user_row, assistant_row = chat_service_dependency.get_last_interaction(chat_session.id, user["user_id"])
+    user_row, assistant_row = ChatServiceDep.get_last_interaction(chat_session.id, CurrentUserDep["user_id"])
     if user_row is None or assistant_row is None:
         raise HTTPException(status_code=500, detail="As mensagens deste chat não forma persistidas.")
-
-    print(user_row)
-    print(assistant_row)
 
     return SendChatMessageResponse(
         chat_session_id=chat_id,

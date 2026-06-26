@@ -22,8 +22,6 @@ if not SECRET_KEY: raise RuntimeError("SECRET_KEY não foi carregada corretament
 
 
 
-def hash_password(password:str):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 def verify_password(plain_pwd:str, hashed_pwd:str):
     return bcrypt.checkpw(plain_pwd.encode('utf-8'), hashed_pwd.encode('utf-8'))
@@ -93,35 +91,3 @@ class UserService:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email já em uso.")
         
         return self.repo.create_user(str(uuid.uuid4()), username, email, hashed_password, role)
-
-
-
-def get_db():
-    db=SessionLocal()
-    try: yield db
-    finally: db.close()
-
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_bearer)],
-    db: Annotated[Session, Depends(get_db)],
-):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("user_id")
-        email = payload.get("email")
-        role = payload.get("role")
-
-        if email is None or user_id is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Impossível validar usuário.")
-
-        if payload.get("type") == "refresh":
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido para essa operação")
-
-        user_model = UserRepository(db).get_user_by_id(user_id)
-        if user_model is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário não encontrado.")
-
-        return {"user_id": user_id, "email": email, "role": role}
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Impossível validar usuário.")
-    

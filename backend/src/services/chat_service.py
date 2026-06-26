@@ -1,3 +1,5 @@
+from starlette import status
+from fastapi import Depends, HTTPException
 import uuid
 import time
 
@@ -76,7 +78,7 @@ def get_context_strategy(name: str | None = None) -> ContextStrategy:
     return cls()
 
 
-class ChatSessionService:
+class ChatService:
 
     def __init__(self, db, inference_gw, ctxt_strategy: ContextStrategy | None = None):
         self.db = db
@@ -268,3 +270,12 @@ class ChatSessionService:
         assistant_row = next((m for m in reversed(rows) if m.role == "assistant"), None)
 
         return user_row, assistant_row
+
+    def delete_chat_session(self, chat_session_id, user_id) -> ChatSession:
+
+        chat_session = self.get_chat_session(chat_session_id, user_id)
+        if chat_session is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat não encontrado.")
+
+        self.repo.delete_chat_session(chat_session_id, user_id)
+
+        return chat_session

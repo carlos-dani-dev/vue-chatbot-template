@@ -24,6 +24,7 @@ class ChatSessionRepository():
         chat_session = ChatSession(id=chat_id, user_id=user_id, title=title, 
                                    channel=channel, session_metadata={"str": "str"})
         self.db.add(chat_session)
+        self.db.commit()
         self.db.flush()
         return chat_session
 
@@ -42,3 +43,7 @@ class ChatSessionRepository():
         self.db.add(chat_message)
         self.db.flush()
         return chat_message
+    
+    def delete_chat_session(self, chat_session_id: str, user_id: str) -> ChatSession:
+        self.db.query(ChatSession).filter(ChatSession.id == chat_session_id).delete()
+        self.db.commit()    

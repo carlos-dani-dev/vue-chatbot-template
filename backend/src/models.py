@@ -33,14 +33,17 @@ class ChatSession(Base):
     session_metadata: Mapped[dict[str, any]]=mapped_column(JSON)
 
     user: Mapped["User"]=relationship("User", back_populates="chat_sessions")
-    messages: Mapped[list["ChatMessage"]]=relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
-
+    messages: Mapped[list["ChatMessage"]] = relationship(
+        "ChatMessage", back_populates="session", cascade="all, delete-orphan", passive_deletes=True
+    )
 
 class ChatMessage(Base):
     __tablename__="chat_messages"
 
     id: Mapped[uuid.UUID]=mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID]=mapped_column(Uuid, ForeignKey("chat_sessions.id"), nullable=False)
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("chat_sessions.id", ondelete="CASCADE"), nullable=False
+    )
     role: Mapped[str]=mapped_column(String, nullable=False)
     content: Mapped[str]=mapped_column(String, nullable=False)
     created_at: Mapped[datetime]=mapped_column(DateTime, nullable=False)
