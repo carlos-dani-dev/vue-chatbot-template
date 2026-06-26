@@ -48,7 +48,6 @@
 <template>
     <div v-if="open" ref="menu" class="bg-white border border-default-medium rounded-base shadow-lg w-44">
         <ul class="p-2 text-sm text-body font-medium" aria-labelledby="dropdownDelayButton">
-            
             <li>
                 <a href="#" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">Settings</a>
             </li>
