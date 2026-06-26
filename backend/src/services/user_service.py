@@ -1,26 +1,20 @@
+from starlette import status
+from fastapi import HTTPException
+from fastapi.security import OAuth2PasswordBearer
+
 import uuid
-
-from typing import Annotated
-
 from datetime import timedelta, datetime, timezone
-from ..config import SECRET_KEY, ALGORITHM
 
 import bcrypt
 from jose import JWTError, jwt
 
-from sqlalchemy.orm import Session
-from ..database import SessionLocal
+from ..config import SECRET_KEY, ALGORITHM
 
-from starlette import status
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.security import OAuth2PasswordBearer
-
+# needed models
 from ..models import User
+
+# needed repos
 from ..repository.user_repository import UserRepository
-
-if not SECRET_KEY: raise RuntimeError("SECRET_KEY não foi carregada corretamente")
-
-
 
 
 def verify_password(plain_pwd:str, hashed_pwd:str):

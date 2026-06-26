@@ -1,5 +1,6 @@
 from starlette import status
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
+
 import uuid
 import time
 
@@ -8,12 +9,17 @@ from typing import TypedDict, Literal, Protocol, Any
 
 from ..config import CHAT_DEFAULT_SYSTEM_PROMPT, CONTEXT_STRATEGY, WINDOW_SIZE
 
-from ..exceptions.exceptions import ChatSessionNotFoundError
+# needed schemas
+from ..schemas.openaiLike_schema import ChatCompletionRequest
+from ..schemas.openaiLike_schema import ChatCompletionMetadata, ChatMessageOpenAI
 
-from ..models import ChatSession, User
-from ..schemas.openaiLike_schema import ChatCompletionRequest, ChatCompletionMetadata, ChatMessageOpenAI
+# needed models
+from ..models import ChatSession
+
+# needed repos
 from ..repository.chat_session_repository import ChatSessionRepository
 
+from ..exceptions.exceptions import ChatSessionNotFoundError
 
 
 @dataclass
@@ -48,7 +54,6 @@ class ContextStrategy(Protocol):
 def build_context(messages: list[ContextMessage]) -> list[ContextMessage]:
     return messages[-int(WINDOW_SIZE):]
 
-
 class SlidingWindowStrategy:
     def build(
         self,
@@ -61,12 +66,11 @@ class SlidingWindowStrategy:
         return ContextResult(messages=selected, window_size=len(selected))
 
 
-STRATEGIES:dict[str, type[ContextStrategy]] = {
-    "sliding_window": SlidingWindowStrategy
-}
-
 def get_active_context_strategy_name() -> str:
     return CONTEXT_STRATEGY.strip().lower()
+
+
+STRATEGIES:dict[str, type[ContextStrategy]] = {"sliding_window": SlidingWindowStrategy}
 
 def get_context_strategy(name: str | None = None) -> ContextStrategy:
     key = (name or get_active_context_strategy_name()).strip().lower()
@@ -242,8 +246,6 @@ class ChatService:
         response_body = {**llm_response, "metadata": metadata.model_dump()}
         return ChatResult(response=response_body, metadata=metadata)
 
-
-    ### métodos do endpoint
 
     def list_chat_sessions_by_user(self, user_id) -> list[ChatSession]:
         return self.repo.list_chat_sessions_by_user_id(user_id)
